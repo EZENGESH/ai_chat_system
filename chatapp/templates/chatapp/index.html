@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 20px; }
+        #chat-box { width: 50%; margin: 20px auto; border: 1px solid #ccc; padding: 10px; height: 300px; overflow-y: scroll; }
+        input, button { margin: 5px; padding: 10px; }
+    </style>
+</head>
+<body>
+    <h2>Chat with AI</h2>
+
+    <div id="chat-box"></div>
+
+    <input type="text" id="message" placeholder="Type your message">
+    <button id="sendButton">Send</button>
+
+    <p><strong>Remaining Tokens:</strong> <span id="tokens">Loading...</span></p>
+
+    <script>
+        document.getElementById("sendButton").addEventListener("click", sendMessage);
+
+        async function sendMessage() {
+            const messageInput = document.getElementById("message");
+            const chatBox = document.getElementById("chat-box");
+            const token = localStorage.getItem("access_token");  // ✅ Retrieve token correctly
+
+            if (!messageInput.value.trim()) {
+                alert("Please enter a message.");
+                return;
+            }
+            if (!token) {
+                alert("You are not logged in! Please log in first.");
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/chat/", {
+                    method: "POST",
+                    headers: {
+                        "Authorization": "Bearer " + token,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ message: messageInput.value })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    chatBox.innerHTML += `<p><strong>You:</strong> ${messageInput.value}</p>`;
+                    chatBox.innerHTML += `<p><strong>AI:</strong> ${data.response}</p>`;
+                    document.getElementById("tokens").innerText = data.remaining_tokens;
+                    messageInput.value = "";
+                    chatBox.scrollTop = chatBox.scrollHeight;
+                } else {
+                    alert(data.error || "Error communicating with AI.");
+                }
+            } catch (error) {
+                console.error("Error:", error);
+                alert("Failed to send message. Check console for details.");
+            }
+        }
+
+        async function loginUser() {
+            try {
+                const response = await fetch("http://127.0.0.1:8000/login/", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ username: "testuser", password: "securepassword" })  // Change to real credentials
+                });
+
+                const data = await response.json();
+                if (data.access) {
+                    localStorage.setItem("access_token", data.access);  // ✅ Store token
+                    alert("Login successful!");
+                    getTokenBalance(); // ✅ Update token balance after login
+                } else {
+                    alert("Login failed. Check credentials.");
+                }
+            } catch (error) {
+                console.error("Login Error:", error);
+                alert("Login failed. Check console for details.");
+            }
+        }
+
+        async function getTokenBalance() {
+            const token = localStorage.getItem("access_token");
+
+            if (!token) {
+                document.getElementById("tokens").innerText = "Not logged in";
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/token-balance/", {
+                    method: "GET",
+                    headers: { "Authorization": "Bearer " + token }
+                });
+
+                const data = await response.json();
+                document.getElementById("tokens").innerText = data.tokens;
+            } catch (error) {
+                console.error("Token Balance Error:", error);
+                document.getElementById("tokens").innerText = "Error fetching balance";
+            }
+        }
+
+        // ✅ Call loginUser() on page load
+        loginUser();
+    </script>
+</body>
+</html>
