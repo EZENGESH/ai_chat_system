@@ -115,12 +115,6 @@ This project is a Django-based AI chat system that provides user authentication,
   curl -X GET http://127.0.0.1:8000/token-balance/ -H "Authorization: Bearer JWT_ACCESS_TOKEN"
   ```
 
-### Using Django Test Framework
-Run the tests using:
-```sh
-python manage.py test
-```
-
 ## Challenges Faced
 - Handling JWT Authentication and Token Expiry.
 - Ensuring proper token deduction on chat requests.
@@ -130,12 +124,6 @@ python manage.py test
 - Connect to OpenAI API for real AI-generated responses.
 - Implement real-time chat with WebSockets.
 - Improve UI/UX for a better user experience.
-
-## Submission Instructions
-1. Push your code to GitHub.
-2. Include a detailed `README.md` with setup, usage, and testing details.
-3. Provide input/output samples.
-4. Submit the repository link or a ZIP file of the project.
 
 ---
 🚀 **Happy Coding!**
